@@ -58,7 +58,9 @@ class Collector:
         total_results = dict()
         status = None
 
+        empty_flag = False  # use to check if there is a list not empty
         while page_num < max_page_num or max_page_num < 0:
+            empty_flag = True
             p_url.set_param('page_num', page_num)
             status, result = self.get_single_result(p_url, collect_keys)
             if not status.is_ok():
@@ -72,19 +74,26 @@ class Collector:
                     else:
                         s_append(total_results, key, result_list)
 
+                        # if there is a list not empty
                         current_num = len(result_list)
+                        if current_num > 0:
+                            empty_flag = False
+
                         total_list = s_get(total_results, key, list())
                         total_num = len(total_list)
                         if current_num == 0:
                             # iteration finish
-                            break
+                            continue
                         elif total_num > max_result_num and max_result_num > 0:
                             # iteration finish
                             total_results[key] = total_list[:max_result_num]
-                            break
+                            continue
 
-                # iterate
-                page_num += 1
+                # iterate or not
+                if empty_flag:
+                    break
+                else:
+                    page_num += 1
         return status, total_results
 
     pass
