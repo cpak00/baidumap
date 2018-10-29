@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
-from baidumap.util.dict_tool import s_get, s_append
-from baidumap.util.list_tool import s_remove
-from baidumap.core.status import get_status_from_json
-from baidumap.api.exceptions import HandleNotExistsError
-
 from json.decoder import JSONDecodeError
 from time import sleep
+
+from baidumap.api.exceptions import HandleNotExistsError
+from baidumap.core.status import get_status_from_json
+from baidumap.util import log
+from baidumap.util.dict_tool import s_append, s_get
+from baidumap.util.list_tool import s_remove
 
 
 class Collector:
@@ -24,15 +25,18 @@ class Collector:
         p_url.set_param('ak', self.ak_key)
         p_url.set_param('output', 'json')
         response = p_url.get()
+        log.debug('requests GET: %s' % p_url)
         try:
             json = response.json()
         except JSONDecodeError:
+            log.error('JSONDecodeError:\nraw:\n%s' % response.raw)
             raise HandleNotExistsError()
         result = dict()
 
         # default collect all
         if collect_keys is None:
             collect_keys = list(json.keys())
+            # keys below are not information
             s_remove(collect_keys, 'status')
             s_remove(collect_keys, 'message')
             s_remove(collect_keys, 'msg')
@@ -41,6 +45,7 @@ class Collector:
             result[key] = s_get(json, key, dict())
 
         status = get_status_from_json(json)
+        log.debug('response status: %s' % status)
         return status, result
 
     def get_list_result(self,
@@ -62,6 +67,8 @@ class Collector:
 
         empty_flag = False  # use to check if there is a list not empty
         while page_num < max_page_num or max_page_num < 0:
+            log.debug('page_num: %d' % page_num)
+
             empty_flag = True
             p_url.set_param('page_num', page_num)
             status, result = self.get_single_result(p_url, collect_keys)

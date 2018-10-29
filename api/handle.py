@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
-from baidumap.core.controller import Controller
-from baidumap.util.url import Url
-from baidumap.config import base_url
-from baidumap.object import BaiduMapObject
-from baidumap.api.exceptions import HandleNotExistsError
-
 from urllib.parse import urljoin
+
+from baidumap.core.controller import Controller
+from baidumap.core.static import base_url
+from baidumap.object import BaiduMapObject
+from baidumap.util import log
+from baidumap.util.url import Url
 
 
 class Handle:
@@ -21,6 +21,7 @@ class Handle:
         self._url = Url(url)
         self._url.add_map(kwargs)
         self.is_list = is_list
+        log.debug('handle created, name: %s' % self.get_name())
         return
 
     def set_params(self, **kwargs):
@@ -32,7 +33,16 @@ class Handle:
     def set_name(self, name):
         self._url = Url(urljoin(base_url, name))
 
+    def get_name(self):
+        base_length = len(base_url)
+        raw_url = self._url._raw_url
+        if len(raw_url) > base_length:
+            return raw_url[base_length:]
+        else:
+            return 'raw_handle'
+
     def run(self, collect_keys=None, **kwargs):
+        log.info('%s is running' % (self.get_name()))
         result = dict()
         if self.is_list:
             # default collect all

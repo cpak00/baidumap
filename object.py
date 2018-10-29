@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from baidumap.util.dict_tool import s_get, s_merge, s_set
-from baidumap.api.exceptions import OtherError
 
 
 class JsonLike(object):
@@ -148,7 +147,7 @@ class BaiduMapObject(JsonLike):
         handle.set_name('place/v2/detail')
         uid = self.get_property('uid', '')['uid']
         if not isinstance(uid, str):
-            raise OtherError('uid: %s found, takes str' % uid.__class__)
+            raise TypeError('uid: %s found, takes str' % uid.__class__)
 
         if detail:
             scope = '2'
@@ -163,7 +162,7 @@ class BaiduMapObject(JsonLike):
         handle.set_name('geocoder/v2/')
         address = self.get_property('address', '')['address']
         if not isinstance(address, str):
-            raise OtherError(
+            raise TypeError(
                 'address: %s found, takes str' % address.__class__)
 
         handle.set_params(address=address)
@@ -175,7 +174,7 @@ class BaiduMapObject(JsonLike):
         handle.set_name('geocoder/v2/')
         location = self.get_property('location', '')['location']
         if not isinstance(location, Location):
-            raise OtherError(
+            raise TypeError(
                 'location: %s found, takes Location' % location.__class__)
 
         handle.set_params(location=location)

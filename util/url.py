@@ -14,6 +14,9 @@ class Url:
         self._params = dict()
         return
 
+    def __str__(self):
+        return '%s?%s' % (self._raw_url, '&'.join(self._params))
+
     def get(self):
         '''
         get()->Response<>

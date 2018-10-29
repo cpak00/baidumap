@@ -1,8 +1,55 @@
 # Baidu Map Api
 
+<!-- TOC -->
+
+- [Baidu Map Api](#baidu-map-api)
+    - [Description](#description)
+    - [Get Start](#get-start)
+    - [Handle](#handle)
+        - [Factory Mode](#factory-mode)
+        - [Agent Mode](#agent-mode)
+    - [Object](#object)
+        - [JsonLike](#jsonlike)
+            - [`__init__(json=dict(), **kwargs)`](#__init__jsondict-kwargs)
+            - [`__str__()`](#__str__)
+            - [`is_list()`](#is_list)
+            - [`get_property(p_key, p_default=None)`](#get_propertyp_key-p_defaultnone)
+            - [`get_properties(p_keys, p_defaults=None)`](#get_propertiesp_keys-p_defaultsnone)
+            - [`set_property(p_key, p_value)`](#set_propertyp_key-p_value)
+            - [`keys()`](#keys)
+            - [`from_json(json, **kwargs)`](#from_jsonjson-kwargs)
+            - [`to_json()`](#to_json)
+        - [Location(JsonLike)](#locationjsonlike)
+            - [`__str__()`](#__str__-1)
+        - [BaiduMapObject(JsonLike)](#baidumapobjectjsonlike)
+            - [`from_uid(handle, detail=False)`](#from_uidhandle-detailfalse)
+            - [`from_address(handle, detail=False)`](#from_addresshandle-detailfalse)
+            - [`from_location(handle, detail=False)`](#from_locationhandle-detailfalse)
+    - [Exception](#exception)
+        - [BaiduMapApiException](#baidumapapiexception)
+        - [HandleNotExistsError](#handlenotexistserror)
+        - [NetError](#neterror)
+        - [OtherError](#othererror)
+    - [How to work](#how-to-work)
+        - [core](#core)
+            - [collector](#collector)
+            - [controller](#controller)
+            - [status](#status)
+        - [util](#util)
+            - [dict_tool & list_tool](#dict_tool--list_tool)
+            - [url](#url)
+    - [Log](#log)
+        - [config](#config)
+
+<!-- /TOC -->
+
 ## Description
 
 This module is an python sdk for baidu map. You are only required to write a few code to get an execllent effect. Also, this module may work on another map api after some modification
+
+Author: cpak00@github
+
+Email: cymcpak00@gmail.com
 
 ## Get Start
 
@@ -14,13 +61,27 @@ install with pip, requestes required only.
 
  test.py
 ```python
+from baidumap import config
 from baidumap.api.handle import get_handle
 from baidumap.object import BaiduMapObject
 
-ak_key = 'ZAMW5u************'
+import logging
+
+# get raw handler
+ak_key = 'ZAMW5**********************'
 raw_handler = get_handle(ak_key)
 
+# get logger
+FORMAT = "%(asctime)s %(thread)d %(message)s"
+logging.basicConfig(format=FORMAT, datefmt="[%Y-%m-%d %H:%M:%S]")
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
 if __name__ == '__main__':
+    # log config(no necessary)
+    config.mode = config.value.DEBUG
+    config.logger = logger
+
     # Agent Mode
     print('---\nAgent Mode:\n')
     raw_handler = get_handle(ak_key)
@@ -101,7 +162,7 @@ if __name__ == '__main__':
     print(station)
 ```
 
-## How to use BaiduMap Handle
+## Handle
 
 ### Factory Mode
 
@@ -149,8 +210,7 @@ atm_in_beijing = place_search.run(max_page_num=3, page_size=20, max_result_num=5
 # get result
 print(atm_in_beijing)
 # get property(find mode)
-# will return single result if there is only one property match
-# will return dict result if there is a list of property match
+# will return a dict
 print(atm_in_beijing.get_property('address'))
 ```
 
@@ -158,10 +218,191 @@ print(atm_in_beijing.get_property('address'))
 
 ### Agent Mode
 
-You can also use handle by agent mode
+You can also use handle by __agent mode__
 
-first you need to create a BaiduMapObject
+first. you need to import **BaiduMapObject**
 ```python
 from baidumap.object import BaiduMapObject
 ```
 
+second. you need to create a BaiduMapObject with some keys and values
+```python
+thu_main = BaiduMapObject(address='北京市清华大学紫荆宿舍')
+```
+
+then. you need to create a raw handle with *ak_key*
+```python
+raw_handle = get_handle(ak_key)
+```
+
+finally. you just call the agent method to fill the data of **BaiduMapObject**
+```python
+# geography decoder call
+# it will fill Object with location
+thu_main.from_address(handle)
+
+# geography encoder call
+# it will fill Object with address and uid found by location
+# it will create a list-like BaiduMapObject
+thu_main.from_location(handle)
+
+# create a object with uid
+thu_main = BaiduMapObject(uid=thu_main.get_property('uid')[0].uid)
+
+# uid info call
+# it will fill Object with detail info found by uid
+thu_main.from_uid(handle, detail=True)
+```
+
+## Object
+
+### JsonLike
+
+#### `__init__(json=dict(), **kwargs)`
+
+>**JsonLike** object can be inited with **list** or **dict**, you can replace some parameters by decalre *kwargs*
+
+#### `__str__()`
+
+>**JsonLike** object will be transfered as **str** just like **dict**
+
+#### `is_list()`
+
+>**JsonLike** object can be *dict-like* or *list-like* determined by which one init it
+
+#### `get_property(p_key, p_default=None)`
+
+>if you want to read value of **JsonLike**, this method is suggested, it will return a *dict*.
+
+>if there is only one result, it will return *dict* as {key: value}
+
+>if there are more results, it will return a *list-like* *dict* which contains location
+
+#### `get_properties(p_keys, p_defaults=None)`
+
+>you can combine two or more properties in one *list-like* *dict*
+
+#### `set_property(p_key, p_value)`
+
+>you can't set key-value using <**JsonLike**>[key]=value
+
+>you are supposed to set property with this method, if there is no *p_key* in the **JsonLike** object, you can not set it with this method
+
+#### `keys()`
+
+>return the keys in the **JsonLike** object
+
+#### `from_json(json, **kwargs)`
+
+>reconstruct the **JsonLike** object by *dict* or *list*, can replace some properties by *kwargs* 
+
+#### `to_json()`
+
+>return *dict* in **JsonLike**
+
+### Location(JsonLike)
+
+#### `__str__()`
+
+>location will be formatted as lat,lng
+
+### BaiduMapObject(JsonLike)
+
+#### `from_uid(handle, detail=False)`
+
+>fill the **BaiduMapObject** by uid
+
+>needs a handle with valid ak_key
+
+#### `from_address(handle, detail=False)`
+
+>fill the **BaiduMapObject** by address
+
+>needs a handle with valid ak_key
+
+#### `from_location(handle, detail=False)`
+
+>fill the **BaiduMapObject** by location
+
+>needs a handle with valid ak_key
+
+## Exception
+
+### BaiduMapApiException
+
+>base exception
+
+>in baidumap.api.exception
+
+### HandleNotExistsError
+
+>inherit from **BaiduMapApiException**
+
+>handle name not valid
+
+>in baidumao.api.exception
+
+### NetError
+
+>inherit from **BaiduMapApiException**
+
+>net connection broken
+
+>in baidumao.api.exception
+
+### OtherError
+
+>inherit from **BaiduMapApiException**
+
+>error which can not be recognized
+
+>in baidumao.api.exception
+
+## How to work
+
+### core
+
+>package baidumap.core
+
+#### collector
+
+#### controller
+
+#### status
+
+### util
+
+>package baidumap.util
+
+#### dict_tool & list_tool
+
+some safe operation functions
+
+#### url
+
+class **Url**
+
+manager the params and url path
+
+use package *requests* to get json by http request[GET]
+
+## Log
+
+### config
+
+*baidumap.config.mode*
+
+value                | description
+---------------------|------------------------
+config.value.DEBUG   | log detail information
+config.value.INFO    | log important statement
+config.value.WARNING | log unsafe statement
+config.value.ERROR   | log error
+config.value.NONE    | no log
+
+*baidumap.config.filename*
+
+value      | description
+-----------|-------------
+None       | directly record in shell
+**Logger** | use module logging

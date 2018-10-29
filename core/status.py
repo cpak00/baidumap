@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
+from baidumap.core.static import status_map
 from baidumap.util.dict_tool import s_get
-from baidumap.config import status_map
 
 
 class Status:

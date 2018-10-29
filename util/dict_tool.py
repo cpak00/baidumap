@@ -35,6 +35,9 @@ def s_sets(p_map, p_key_f, p_key_b, p_value):
 
 
 def s_merge(map_a, map_b):
+    '''
+    s_merge(map_a, map_b)->None: merge map_b to map_a, won't cover
+    '''
     try:
         for key_b in map_b:
             value = s_get(map_b, key_b)
