@@ -9,7 +9,7 @@ from baidumap.util.dict_tool import s_append, s_get
 from baidumap.util.list_tool import s_remove
 
 
-class Collector:
+class Collector(object):
     '''
     baidu api data collector
     '''

@@ -6,7 +6,7 @@ from baidumap.core.collector import Collector
 from baidumap.util import log
 
 
-class Controller:
+class Controller(object):
     '''
     baidu api core controller
     '''

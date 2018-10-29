@@ -8,7 +8,7 @@ from baidumap.util import log
 from baidumap.util.url import Url
 
 
-class Handle:
+class Handle(object):
     '''
     handle of baidu map api
     '''

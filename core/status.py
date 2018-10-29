@@ -3,7 +3,7 @@ from baidumap.core.static import status_map
 from baidumap.util.dict_tool import s_get
 
 
-class Status:
+class Status(object):
     def __init__(self, code, msg_en, msg_zh):
         self.code = str(code)
         self.msg_en = str(msg_en)

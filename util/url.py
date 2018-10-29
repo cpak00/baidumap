@@ -2,7 +2,7 @@
 import requests
 
 
-class Url:
+class Url(object):
     '''
     Url for api request
     '''
