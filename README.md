@@ -20,7 +20,6 @@ ak_key = 'ZAMW5usZMrVb9oY3YqGTLa2rRGYaq7GV'
 raw_handler = get_handle(ak_key)
 
 if __name__ == '__main__':
-    '''
     # Agent Mode
     raw_handler = get_handle(ak_key)
     thu_main = BaiduMapObject(address='北京市清华大学紫荆园餐厅')
@@ -46,7 +45,6 @@ if __name__ == '__main__':
     print(
         placeser.run(page_size=20, max_page_num=1, max_result_num=15)[
             'results'])
-    '''
 
     # complex sample
 
