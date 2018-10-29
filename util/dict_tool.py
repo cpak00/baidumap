@@ -34,6 +34,18 @@ def s_sets(p_map, p_key_f, p_key_b, p_value):
         return
 
 
+def s_merge(map_a, map_b):
+    try:
+        for key_b in map_b:
+            value = s_get(map_b, key_b)
+            if key_b in map_a:
+                s_merge(map_a[key_b], map_b[key_b])
+            else:
+                map_a[key_b] = value
+    except:
+        return
+
+
 def s_append(p_map, p_key, p_list):
     '''
     s_append(p_map, p_key, p_list)->None: save append a list

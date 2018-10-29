@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from baidumap.util.dict_tool import s_get, s_set, s_sets
+from baidumap.util.dict_tool import s_get, s_merge, s_set
 from baidumap.api.exceptions import OtherError
 
 
@@ -29,7 +29,7 @@ class JsonLike(object):
 
     def get_property(self, p_key, p_default=None):
         if p_key in self.__dict__:
-            return s_get(self.__dict__, p_key, p_default)
+            return {p_key: s_get(self.__dict__, p_key, p_default)}
         else:
             if self.is_list():
                 results = dict()
@@ -68,9 +68,7 @@ class JsonLike(object):
             default = s_get(p_defaults, key)
             results = self.get_property(key, default)
             if isinstance(results, dict):
-                for result_key in results:
-                    s_sets(final_results, result_key, key,
-                           s_get(results, result_key))
+                s_merge(final_results, results)
             else:
                 s_set(final_results, key, results)
 
@@ -148,7 +146,7 @@ class BaiduMapObject(JsonLike):
     def from_uid(self, handle=None, detail=False):
         # use handle to get detail info
         handle.set_name('place/v2/detail')
-        uid = self.get_property('uid', '')
+        uid = self.get_property('uid', '')['uid']
         if not isinstance(uid, str):
             raise OtherError('uid: %s found, takes str' % uid.__class__)
 
@@ -163,7 +161,7 @@ class BaiduMapObject(JsonLike):
     def from_address(self, handle=None):
         # use handle to get location
         handle.set_name('geocoder/v2/')
-        address = self.get_property('address', '')
+        address = self.get_property('address', '')['address']
         if not isinstance(address, str):
             raise OtherError(
                 'address: %s found, takes str' % address.__class__)
@@ -175,7 +173,7 @@ class BaiduMapObject(JsonLike):
     def from_location(self, handle=None):
         # use handle to get address
         handle.set_name('geocoder/v2/')
-        location = self.get_property('location', '')
+        location = self.get_property('location', '')['location']
         if not isinstance(location, Location):
             raise OtherError(
                 'location: %s found, takes Location' % location.__class__)
