@@ -5,6 +5,7 @@ from baidumap.core.status import get_status_from_json
 from baidumap.api.exceptions import HandleNotExistsError
 
 from json.decoder import JSONDecodeError
+from time import sleep
 
 
 class Collector:
@@ -45,9 +46,10 @@ class Collector:
     def get_list_result(self,
                         p_url,
                         collect_keys=None,
-                        page_size=20,
+                        page_size=10,
                         max_page_num=-1,
-                        max_result_num=-1):
+                        max_result_num=-1,
+                        interval=0):
         '''
         get_list_result(p_url[, max_page_num[, max_result_num]])
         ->status: Status, result: list
@@ -70,6 +72,7 @@ class Collector:
                 for key in result:
                     result_list = s_get(result, key)
                     if not isinstance(result_list, list):
+                        total_results[key] = result_list
                         continue
                     else:
                         s_append(total_results, key, result_list)
@@ -87,12 +90,14 @@ class Collector:
                         elif total_num > max_result_num and max_result_num > 0:
                             # iteration finish
                             total_results[key] = total_list[:max_result_num]
-                            continue
+                            empty_flag = True
+                            break
 
                 # iterate or not
                 if empty_flag:
                     break
                 else:
+                    sleep(interval)
                     page_num += 1
         return status, total_results
 

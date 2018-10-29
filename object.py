@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from baidumap.util.dict_tool import s_get
 
+from time import sleep
+
 
 class JsonLike(object):
     def __init__(self, json=dict(), **kwargs):
@@ -27,14 +29,37 @@ class JsonLike(object):
         if p_key in self.__dict__:
             return s_get(self.__dict__, p_key, p_default)
         else:
-            for key in self.__dict__:
-                value = s_get(self.__dict__, key)
+            if 'list_size' in self.__dict__:
+                results = dict()
+                for key in self.__dict__:
+                    # print('search in %s' % key)
+                    if key == 'list_size':
+                        continue
+                    value = s_get(self.__dict__, key, JsonLike())
+                    if isinstance(value, JsonLike):
+                        # print('debug iterator')
+                        value = value.get_property(p_key, p_default)
+                    else:
+                        print(value)
+                    if value and value is not None and value != p_default:
+                        results[key] = value
+                return results
+            else:
+                return self.get_property_in_child(p_key, p_default)
+
+    def get_property_in_child(self, p_key, p_default=None):
+        for key in self.__dict__:
+            # print('search in %s' % (key))
+            value = s_get(self.__dict__, key)
+            if isinstance(value, JsonLike):
+                value = s_get(self.__dict__, key, JsonLike())
                 if isinstance(value, JsonLike):
-                    value = s_get(self.__dict__, key,
-                                  JsonLike()).get_property(p_key, p_default)
-                    if value is not None and value != p_default:
-                        return value
-            return p_default
+                    value = value.get_property(p_key, p_default)
+                else:
+                    print(value)
+                if value is not None and value != p_default:
+                    return value
+        return p_default
 
     def set_property(self, p_key, p_value):
         if p_key in self.__dict__:
@@ -47,6 +72,9 @@ class JsonLike(object):
                         p_key, p_value)
             return
 
+    def keys(self):
+        return self.__dict__.keys()
+
     def from_json(self, json, **kwargs):
         self.__dict__ = dict()
         if isinstance(json, dict) or isinstance(json, JsonLike):
@@ -57,10 +85,17 @@ class JsonLike(object):
                     value = BaiduMapObject(value)
                 elif isinstance(value, dict):
                     value = JsonLike(value)
+                # change location to Location
+                if key == 'location':
+                    value = Location(value.to_json())
                 self.__dict__[key] = value
         elif isinstance(json, list):
             for index, key in enumerate(json):
-                self.__dict__[index] = BaiduMapObject(key)
+                if isinstance(key, list) or isinstance(key, dict):
+                    self.__dict__[index] = BaiduMapObject(key)
+                else:
+                    self.__dict__[index] = key
+            self.__dict__['list_size'] = len(json)
 
     def to_json(self):
         return self.__dict__
@@ -84,15 +119,6 @@ class Location(JsonLike):
 
 
 class BaiduMapObject(JsonLike):
-    def __init__(self, *args, **kwargs):
-        JsonLike.__init__(self, *args, **kwargs)
-
-        # change location from JsonLike to Location
-        location = self.get_property('location')
-        if location:
-            pre_location = location.to_json()
-            self.set_property('location', Location(pre_location))
-
     def from_uid(self, handle=None, detail=False):
         # use handle to get detail info
         handle.set_name('place/v2/detail')
