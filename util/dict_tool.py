@@ -5,10 +5,33 @@ def s_get(p_map, p_key, p_default=None):
     '''
     s_get(p_map, p_key, p_default)->p_map[p_key] or p_default
     '''
-    if p_map and p_key in p_map:
+    try:
         return p_map[p_key]
-    else:
+    except Exception:
         return p_default
+
+
+def s_set(p_map, p_key, p_value):
+    '''
+    s_set(p_map, p_key, p_value)->None
+    '''
+    try:
+        p_map[p_key] = p_value
+    finally:
+        return
+
+
+def s_sets(p_map, p_key_f, p_key_b, p_value):
+    '''
+    s_sets(p_map, p_key_f, p_key_b, p_value)->None
+    '''
+    try:
+        if p_key_f not in p_map:
+            p_map[p_key_f] = {p_key_b: p_value}
+        else:
+            p_map[p_key_f][p_key_b] = p_value
+    except:
+        return
 
 
 def s_append(p_map, p_key, p_list):
@@ -25,7 +48,7 @@ def s_remove(p_map, p_key, p_default=None):
     '''
     s_remove(p_map, p_key)->p_value
     '''
-    if p_map and p_key in p_map:
+    if p_map is not None and p_key in p_map:
         p_value = p_map[p_key]
         p_map.remove(p_key)
         return p_value
