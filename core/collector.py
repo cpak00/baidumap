@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-from json.decoder import JSONDecodeError
 from time import sleep
 
 from baidumap.api.exceptions import HandleNotExistsError
@@ -28,7 +27,7 @@ class Collector(object):
         log.debug('requests GET: %s' % p_url)
         try:
             json = response.json()
-        except JSONDecodeError:
+        except ValueError:
             log.error('JSONDecodeError:\nraw:\n%s' % response.raw)
             raise HandleNotExistsError()
         result = dict()
